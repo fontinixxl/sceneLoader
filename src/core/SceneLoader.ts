@@ -7,7 +7,6 @@
  *
  * Original concept and implementation by the PixiJS team.
  * Refactored into a standalone library for broader use.
- *
  */
 
 import { Assets, Container, Ticker } from "pixi.js";
@@ -18,7 +17,9 @@ import { areBundlesLoaded } from "../utils/assetHelper";
  * SceneLoader manages scenes and overlays in a PixiJS application,
  * handling transitions, asset loading, and resize events.
  */
-export class SceneLoader {
+class SceneLoaderClass {
+  private static instance: SceneLoaderClass;
+
   /** The view that contains the scenes */
   public sceneView = new Container();
 
@@ -50,13 +51,36 @@ export class SceneLoader {
   private readonly _sceneMap = new Map<string, Scene>();
 
   /** The application instance */
-  private app: any;
+  private app?: any;
+
+  /** Whether the SceneLoader has been initialized */
+  private isInitialized = false;
 
   /**
-   * Creates a new SceneLoader
+   * Private constructor for singleton pattern
+   */
+  private constructor() {}
+
+  /**
+   * Get the singleton instance
+   */
+  public static getInstance(): SceneLoaderClass {
+    if (!SceneLoaderClass.instance) {
+      SceneLoaderClass.instance = new SceneLoaderClass();
+    }
+    return SceneLoaderClass.instance;
+  }
+
+  /**
+   * Initialize the SceneLoader with the application and options
    * @param options - Configuration options
    */
-  constructor(options: SceneLoaderOptions) {
+  public init(options: SceneLoaderOptions): void {
+    if (this.isInitialized) {
+      console.warn("SceneLoader already initialized");
+      return;
+    }
+
     this.app = options.app;
 
     // Add scene containers to parent (default to app.stage)
@@ -68,6 +92,19 @@ export class SceneLoader {
     if (options.loadingScene) {
       this.setLoadingScene(options.loadingScene);
     }
+
+    this.isInitialized = true;
+  }
+
+  /**
+   * Get the PixiJS application instance
+   * @returns The PixiJS application
+   */
+  public getApp(): any {
+    if (!this.isInitialized || !this.app) {
+      throw new Error("SceneLoader not initialized. Call SceneLoader.init() first.");
+    }
+    return this.app;
   }
 
   /**
@@ -84,6 +121,9 @@ export class SceneLoader {
    * @param data - Optional data to pass to the scene
    */
   public async goToScene<T>(SceneCtor: SceneConstructor, data?: T): Promise<void> {
+    if (!this.isInitialized) {
+      throw new Error("SceneLoader not initialized. Call SceneLoader.init() first.");
+    }
     await this._showScene(SceneCtor, false, data);
   }
 
@@ -93,6 +133,9 @@ export class SceneLoader {
    * @param data - Optional data to pass to the overlay
    */
   public async showOverlay<T>(SceneCtor: SceneConstructor, data?: T): Promise<void> {
+    if (!this.isInitialized) {
+      throw new Error("SceneLoader not initialized. Call SceneLoader.init() first.");
+    }
     await this._showScene(SceneCtor, true, data);
   }
 
@@ -113,6 +156,10 @@ export class SceneLoader {
    * @param height - New height
    */
   public resize(width: number, height: number): void {
+    if (!this.isInitialized) {
+      throw new Error("SceneLoader not initialized. Call SceneLoader.init() first.");
+    }
+
     this._width = width;
     this._height = height;
 
@@ -286,3 +333,6 @@ export class SceneLoader {
     this.currentOverlayResize = undefined;
   }
 }
+
+// Export singleton instance
+export const SceneLoader = SceneLoaderClass.getInstance();

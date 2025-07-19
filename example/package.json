@@ -1,0 +1,20 @@
+{
+  "name": "pixi-scene-loader-example",
+  "version": "1.0.0",
+  "description": "Example project demonstrating pixi-scene-loader library usage",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "dev": "vite",
+    "link-library": "cd .. && npm link && cd example && npm link pixi-scene-loader"
+  },
+  "dependencies": {
+    "pixi.js": "^7.0.0",
+    "pixi-scene-loader": "file:.."
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  }
+}
